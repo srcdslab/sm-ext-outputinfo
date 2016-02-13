@@ -36,6 +36,8 @@
  * @brief Implement extension code here.
  */
 
+CGlobalVars *gpGlobals = NULL;
+
 Outputinfo g_Outputinfo;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&g_Outputinfo);
@@ -309,4 +311,10 @@ const sp_nativeinfo_t MyNatives[] =
 void Outputinfo::SDK_OnAllLoaded()
 {
 	sharesys->AddNatives(myself, MyNatives);
+}
+
+bool Outputinfo::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)
+{
+	gpGlobals = ismm->GetCGlobals();
+	return true;
 }
