@@ -116,6 +116,4 @@ public:
 #endif
 };
 
-
-
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
