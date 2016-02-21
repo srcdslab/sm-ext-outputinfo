@@ -36,8 +36,6 @@
  * @brief Implement extension code here.
  */
 
-CGlobalVars *gpGlobals = NULL;
-
 Outputinfo g_Outputinfo;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&g_Outputinfo);
@@ -108,47 +106,14 @@ private:
 	CBaseEntityOutput( CBaseEntityOutput& ); // protect from accidental copying
 };
 
-BEGIN_SIMPLE_DATADESC( CEventAction )
-	DEFINE_FIELD( m_iTarget, FIELD_STRING ),
-	DEFINE_FIELD( m_iTargetInput, FIELD_STRING ),
-	DEFINE_FIELD( m_iParameter, FIELD_STRING ),
-	DEFINE_FIELD( m_flDelay, FIELD_FLOAT ),
-	DEFINE_FIELD( m_nTimesToFire, FIELD_INTEGER ),
-	DEFINE_FIELD( m_iIDStamp, FIELD_INTEGER ),
-END_DATADESC()
-
-BEGIN_SIMPLE_DATADESC( CBaseEntityOutput )
-	//DEFINE_CUSTOM_FIELD( m_Value, variantFuncs ),
-END_DATADESC()
-
 int CBaseEntityOutput::NumberOfElements(void)
 {
 	int count = 0;
-
-	if (m_ActionList == NULL)
-		return -1;
-
 	for (CEventAction *ev = m_ActionList; ev != NULL; ev = ev->m_pNext)
+	{
 		count++;
-
-	return (count);
-}
-
-inline CBaseEntity *GetCBaseEntity(int Num)
-{
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-	edict_t *pEdict = (edict_t *)(gpGlobals->pEdicts + Num);
-#else
-	edict_t *pEdict = engine->PEntityOfEntIndex(Num);
-#endif
-	if(!pEdict || pEdict->IsFree())
-		return NULL;
-
-	IServerUnknown *pUnk;
-	if((pUnk = pEdict->GetUnknown()) == NULL)
-		return NULL;
-
-	return pUnk->GetBaseEntity();
+	}
+	return count;
 }
 
 inline int GetDataMapOffset(CBaseEntity *pEnt, const char *pName)
@@ -184,7 +149,7 @@ cell_t GetOutputCount(IPluginContext *pContext, const cell_t *params)
 	char *pOutput;
 	pContext->LocalToString(params[2], &pOutput);
 
-	CBaseEntity *pEntity = GetCBaseEntity(params[1]);
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
 	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 
 	if(pEntityOutput == NULL)
@@ -198,7 +163,7 @@ cell_t GetOutputTarget(IPluginContext *pContext, const cell_t *params)
 	char *pOutput;
 	pContext->LocalToString(params[2], &pOutput);
 
-	CBaseEntity *pEntity = GetCBaseEntity(params[1]);
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
 	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
@@ -225,7 +190,7 @@ cell_t GetOutputTargetInput(IPluginContext *pContext, const cell_t *params)
 	char *pOutput;
 	pContext->LocalToString(params[2], &pOutput);
 
-	CBaseEntity *pEntity = GetCBaseEntity(params[1]);
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
 	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 
 	if (pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
@@ -252,7 +217,7 @@ cell_t GetOutputParameter(IPluginContext *pContext, const cell_t *params)
 	char *pOutput;
 	pContext->LocalToString(params[2], &pOutput);
 
-	CBaseEntity *pEntity = GetCBaseEntity(params[1]);
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
 	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 
 	if (pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
@@ -279,7 +244,7 @@ cell_t GetOutputDelay(IPluginContext *pContext, const cell_t *params)
 	char *pOutput;
 	pContext->LocalToString(params[2], &pOutput);
 
-	CBaseEntity *pEntity = GetCBaseEntity(params[1]);
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
 	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 
 	if (pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
@@ -311,10 +276,4 @@ const sp_nativeinfo_t MyNatives[] =
 void Outputinfo::SDK_OnAllLoaded()
 {
 	sharesys->AddNatives(myself, MyNatives);
-}
-
-bool Outputinfo::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)
-{
-	gpGlobals = ismm->GetCGlobals();
-	return true;
 }

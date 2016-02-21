@@ -3,11 +3,11 @@
 #endif
 #define _OutputInfo_Included
 
-native GetOutputCount(int Entity, const char[] sOutput);
-native GetOutputTarget(int Entity, const char[] sOutput, int Index, char[] sTarget);
-native GetOutputTargetInput(int Entity, const char[] sOutput, int Index, char[] sTargetInput);
-native GetOutputParameter(int Entity, const char[] sOutput, int Index, char[] sParameter);
-native Float:GetOutputDelay(int Entity, const char[] sOutput, int Index);
+native int GetOutputCount(int Entity, const char[] sOutput);
+native int GetOutputTarget(int Entity, const char[] sOutput, int Index, char[] sTarget);
+native int GetOutputTargetInput(int Entity, const char[] sOutput, int Index, char[] sTargetInput);
+native int GetOutputParameter(int Entity, const char[] sOutput, int Index, char[] sParameter);
+native float GetOutputDelay(int Entity, const char[] sOutput, int Index);
 
 /**
  * Do not edit below this line!
