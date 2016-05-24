@@ -4,10 +4,20 @@
 #define _OutputInfo_Included
 
 native int GetOutputCount(int Entity, const char[] sOutput);
-native int GetOutputTarget(int Entity, const char[] sOutput, int Index, char[] sTarget);
-native int GetOutputTargetInput(int Entity, const char[] sOutput, int Index, char[] sTargetInput);
-native int GetOutputParameter(int Entity, const char[] sOutput, int Index, char[] sParameter);
+native int GetOutputTarget(int Entity, const char[] sOutput, int Index, char[] sTarget, int MaxLen);
+native int GetOutputTargetInput(int Entity, const char[] sOutput, int Index, char[] sTargetInput, int MaxLen);
+native int GetOutputParameter(int Entity, const char[] sOutput, int Index, char[] sParameter, int MaxLen);
 native float GetOutputDelay(int Entity, const char[] sOutput, int Index);
+native int GetOutputFormatted(int Entity, const char[] sOutput, int Index, char[] sFormatted, int MaxLen);
+native int FindOutput(int Entity, const char[] sOutput, int StartIndex,
+					  const char[] sTarget = NULL_STRING, // or NULL_STRING to ignore
+					  const char[] sTargetInput = NULL_STRING, // or NULL_STRING to ignore
+					  const char[] sParameter = NULL_STRING, // or NULL_STRING to ignore
+					  float fDelay = -1.0, // or -1.0 to ignore
+					  int TimesToFire = 0 // or 0 to ignore
+					  );
+native int DeleteOutput(int Entity, const char[] sOutput, int Index);
+native int DeleteAllOutputs(int Entity, const char[] sOutput);
 
 /**
  * Do not edit below this line!
@@ -36,5 +46,9 @@ public __ext_outputinfo_SetNTVOptional()
 	MarkNativeAsOptional("GetOutputTargetInput");
 	MarkNativeAsOptional("GetOutputParameter");
 	MarkNativeAsOptional("GetOutputDelay");
+	MarkNativeAsOptional("GetOutputFormatted");
+	MarkNativeAsOptional("FindOutput");
+	MarkNativeAsOptional("DeleteOutput");
+	MarkNativeAsOptional("DeleteAllOutputs");
 }
 #endif
