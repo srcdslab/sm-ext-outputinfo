@@ -64,14 +64,36 @@ public:
 	CEventAction *m_pNext;
 	DECLARE_SIMPLE_DATADESC();
 
+#ifdef PLATFORM_WINDOWS
+	static int *s_pBlocksAllocated;
+	static void **s_ppHeadOfFreeList;
+#else
 	static void (*s_pOperatorDeleteFunc)(void *pMem);
+#endif
+
 	static void operator delete(void *pMem);
 };
-void (*CEventAction::s_pOperatorDeleteFunc)(void *pMem);
+
+#ifdef PLATFORM_WINDOWS
+	int *CEventAction::s_pBlocksAllocated;
+	void **CEventAction::s_ppHeadOfFreeList;
+#else
+	void (*CEventAction::s_pOperatorDeleteFunc)(void *pMem);
+#endif
 
 void CEventAction::operator delete(void *pMem)
 {
+#ifdef PLATFORM_WINDOWS
+	(*s_pBlocksAllocated)--;
+
+	// make the block point to the first item in the list
+	*((void **)pMem) = *s_ppHeadOfFreeList;
+
+	// the list head is now the new block
+	*s_ppHeadOfFreeList = pMem;
+#else
 	s_pOperatorDeleteFunc(pMem);
+#endif
 }
 
 class CBaseEntityOutput
@@ -418,11 +440,34 @@ bool Outputinfo::SDK_OnLoad(char *error, size_t maxlen, bool late)
 		return false;
 	}
 
+#ifdef PLATFORM_WINDOWS
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/server.dll");
+
+	HMODULE hModule = GetModuleHandle(path);
+
+	uintptr_t pCode = (uintptr_t)memutils->FindPattern(hModule,
+		"\x8B\x4C\x24\x28\x89\x41\x14\x8B\x4F\x18\xA1****\xFF\x0D****\x89\x07\x89\x3D****\x8B\xF9\xEB\x07",
+		33);
+
+	if(!pCode)
+	{
+		snprintf(error, maxlen, "Failed to find windows signature.\n");
+		return false;
+	}
+
+	uintptr_t ppHeadOfFreeList = *(uintptr_t *)(pCode + 11);
+	uintptr_t pBlocksAllocated = *(uintptr_t *)(pCode + 17);
+
+	CEventAction::s_pBlocksAllocated = (int *)pBlocksAllocated;
+	CEventAction::s_ppHeadOfFreeList = (void **)ppHeadOfFreeList;
+#else
 	if(!g_pGameConf->GetMemSig("CEventAction__operator_delete", (void **)(&CEventAction::s_pOperatorDeleteFunc)) || !CEventAction::s_pOperatorDeleteFunc)
 	{
 		snprintf(error, maxlen, "Failed to find CEventAction__operator_delete function.\n");
 		return false;
 	}
+#endif
 
 	return true;
 }
