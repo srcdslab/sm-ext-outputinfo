@@ -46,6 +46,22 @@ IGameConfig *g_pGameConf = NULL;
 #include <isaverestore.h>
 #include <variant_t.h>
 
+struct varianthax_t
+{
+	union
+	{
+		bool bVal;
+		string_t iszVal;
+		int iVal;
+		float flVal;
+		float vecVal[3];
+		color32 rgbaVal;
+	};
+	CHandle<CBaseEntity> eVal; // this can't be in the union because it has a constructor.
+
+	fieldtype_t fieldType;
+};
+
 class CEventAction
 {
 public:
@@ -99,7 +115,7 @@ void CEventAction::operator delete(void *pMem)
 class CBaseEntityOutput
 {
 public:
-	variant_t m_Value;
+	varianthax_t m_Value;
 	CEventAction *m_ActionList;
 	DECLARE_SIMPLE_DATADESC();
 
@@ -333,6 +349,116 @@ cell_t GetOutputFormatted(IPluginContext *pContext, const cell_t *params)
 	return Length;
 }
 
+cell_t GetOutputValue(IPluginContext *pContext, const cell_t *params)
+{
+	char *pOutput;
+	pContext->LocalToString(params[2], &pOutput);
+
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+
+	if(pEntityOutput == NULL)
+		return -1;
+
+	switch(pEntityOutput->m_Value.fieldType)
+	{
+	case FIELD_TICK:
+	case FIELD_MODELINDEX:
+	case FIELD_MATERIALINDEX:
+	case FIELD_INTEGER:
+	case FIELD_COLOR32:
+	case FIELD_SHORT:
+	case FIELD_CHARACTER:
+	case FIELD_BOOLEAN:
+		break;
+	default:
+		return pContext->ThrowNativeError("%s value is not an integer (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+	}
+
+	return (cell_t)pEntityOutput->m_Value.iVal;
+}
+
+cell_t GetOutputValueFloat(IPluginContext *pContext, const cell_t *params)
+{
+	char *pOutput;
+	pContext->LocalToString(params[2], &pOutput);
+
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+
+	if(pEntityOutput == NULL)
+		return -1;
+
+	switch(pEntityOutput->m_Value.fieldType)
+	{
+	case FIELD_FLOAT:
+	case FIELD_TIME:
+		break;
+	default:
+		return pContext->ThrowNativeError("%s value is not a float (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+	}
+
+	return sp_ftoc((cell_t)pEntityOutput->m_Value.flVal);
+}
+
+cell_t GetOutputValueString(IPluginContext *pContext, const cell_t *params)
+{
+	char *pOutput;
+	pContext->LocalToString(params[2], &pOutput);
+
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+
+	if(pEntityOutput == NULL)
+		return -1;
+
+	switch(pEntityOutput->m_Value.fieldType)
+	{
+	case FIELD_CHARACTER:
+	case FIELD_STRING:
+	case FIELD_MODELNAME:
+	case FIELD_SOUNDNAME:
+		break;
+	default:
+		return pContext->ThrowNativeError("%s value is not a string (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+	}
+
+	size_t len;
+	pContext->StringToLocalUTF8(params[3], params[4], pEntityOutput->m_Value.iszVal.ToCStr(), &len);
+
+	return len;
+}
+
+cell_t GetOutputValueVector(IPluginContext *pContext, const cell_t *params)
+{
+	char *pOutput;
+	pContext->LocalToString(params[2], &pOutput);
+
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+
+	if(pEntityOutput == NULL)
+		return -1;
+
+	switch(pEntityOutput->m_Value.fieldType)
+	{
+	case FIELD_FLOAT:
+	case FIELD_TIME:
+		break;
+	default:
+		return pContext->ThrowNativeError("%s value is not a float (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+	}
+
+	cell_t *vec;
+	pContext->LocalToPhysAddr(params[3], &vec);
+
+	vec[0] = sp_ftoc(pEntityOutput->m_Value.vecVal[0]);
+	vec[1] = sp_ftoc(pEntityOutput->m_Value.vecVal[1]);
+	vec[2] = sp_ftoc(pEntityOutput->m_Value.vecVal[2]);
+
+	return 1;
+}
+
 cell_t FindOutput(IPluginContext *pContext, const cell_t *params)
 {
 	char *pOutput;
@@ -422,6 +548,10 @@ const sp_nativeinfo_t MyNatives[] =
 	{ "GetOutputParameter", GetOutputParameter },
 	{ "GetOutputDelay", GetOutputDelay },
 	{ "GetOutputFormatted", GetOutputFormatted },
+	{ "GetOutputValue", GetOutputValue },
+	{ "GetOutputValueFloat", GetOutputValueFloat },
+	{ "GetOutputValueString", GetOutputValueString },
+	{ "GetOutputValueVector", GetOutputValueVector },
 	{ "FindOutput", FindOutput },
 	{ "DeleteOutput", DeleteOutput },
 	{ "DeleteAllOutputs", DeleteAllOutputs },
