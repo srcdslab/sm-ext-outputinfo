@@ -197,16 +197,18 @@ int CBaseEntityOutput::DeleteAllElements(void)
 	return Count;
 }
 
-inline int GetDataMapOffset(CBaseEntity *pEnt, const char *pName)
+inline int GetDataMapOffset(CBaseEntity *pEnt, const char *pName, typedescription_t **ppTypeDesc=NULL)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pEnt);
 	if(!pMap)
 		return -1;
 
 	typedescription_t *pTypeDesc = gamehelpers->FindInDataMap(pMap, pName);
-
 	if(pTypeDesc == NULL)
 		return -1;
+
+	if(ppTypeDesc)
+		*ppTypeDesc = pTypeDesc;
 
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	return pTypeDesc->fieldOffset;
@@ -215,11 +217,21 @@ inline int GetDataMapOffset(CBaseEntity *pEnt, const char *pName)
 #endif
 }
 
-inline CBaseEntityOutput *GetOutput(CBaseEntity *pEntity, const char *pOutput)
+inline CBaseEntityOutput *GetOutput(CBaseEntity *pEntity, const char *pOutput, typedescription_t **ppTypeDesc=NULL)
 {
-	int Offset = GetDataMapOffset(pEntity, pOutput);
+	typedescription_t *pTypeDesc = NULL;
+	int Offset = GetDataMapOffset(pEntity, pOutput, &pTypeDesc);
+
+	if(ppTypeDesc)
+		*ppTypeDesc = pTypeDesc;
 
 	if(Offset == -1)
+		return NULL;
+
+	if(pTypeDesc->fieldType != FIELD_CUSTOM)
+		return NULL;
+
+	if(!(pTypeDesc->flags & FTYPEDESC_OUTPUT))
 		return NULL;
 
 	return (CBaseEntityOutput *)((intptr_t)pEntity + Offset);
@@ -231,8 +243,10 @@ cell_t GetOutputCount(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL)
 		return -1;
 
@@ -245,8 +259,10 @@ cell_t GetOutputTarget(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return 0;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return 0;
 
@@ -266,8 +282,10 @@ cell_t GetOutputTargetInput(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return 0;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return 0;
 
@@ -287,8 +305,10 @@ cell_t GetOutputParameter(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return 0;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return 0;
 
@@ -308,8 +328,10 @@ cell_t GetOutputDelay(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return 0;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return -1;
 
@@ -326,8 +348,10 @@ cell_t GetOutputFormatted(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return 0;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return 0;
 
@@ -355,8 +379,10 @@ cell_t GetOutputValue(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL)
 		return -1;
 
@@ -384,8 +410,10 @@ cell_t GetOutputValueFloat(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL)
 		return -1;
 
@@ -407,8 +435,10 @@ cell_t GetOutputValueString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL)
 		return -1;
 
@@ -435,8 +465,10 @@ cell_t GetOutputValueVector(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL)
 		return -1;
 
@@ -465,8 +497,10 @@ cell_t FindOutput(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return -1;
 
@@ -517,8 +551,10 @@ cell_t DeleteOutput(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return -1;
 
@@ -531,14 +567,51 @@ cell_t DeleteAllOutputs(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &pOutput);
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
-	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
+	if(!pEntity)
+		return -1;
 
+	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL || pEntityOutput->m_ActionList == NULL)
 		return -1;
 
 	return pEntityOutput->DeleteAllElements();
 }
 
+cell_t GetOutputNames(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
+	if(!pEntity)
+		return -1;
+
+	datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
+	if(!pMap)
+		return -1;
+
+	for(int count = 0; pMap != NULL; pMap = pMap->baseMap)
+	{
+		for(int i = 0; i < pMap->dataNumFields; i++)
+		{
+			typedescription_t *pTypeDesc = &pMap->dataDesc[i];
+
+			if(pTypeDesc->fieldType != FIELD_CUSTOM)
+				continue;
+
+			if(!(pTypeDesc->flags & FTYPEDESC_OUTPUT))
+				continue;
+
+			if(params[2] == count)
+			{
+				size_t len;
+				pContext->StringToLocalUTF8(params[3], params[4], pTypeDesc->fieldName, &len);
+				return len;
+			}
+
+			count++;
+		}
+	}
+
+	return -1;
+}
 
 const sp_nativeinfo_t MyNatives[] =
 {
@@ -555,6 +628,7 @@ const sp_nativeinfo_t MyNatives[] =
 	{ "FindOutput", FindOutput },
 	{ "DeleteOutput", DeleteOutput },
 	{ "DeleteAllOutputs", DeleteAllOutputs },
+	{ "GetOutputNames", GetOutputNames },
 	{ NULL, NULL },
 };
 

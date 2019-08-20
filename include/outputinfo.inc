@@ -28,6 +28,8 @@ native int FindOutput(int Entity, const char[] sOutput, int StartIndex,
 native int DeleteOutput(int Entity, const char[] sOutput, int Index);
 native int DeleteAllOutputs(int Entity, const char[] sOutput);
 
+native int GetOutputNames(int Entity, int Index, const char[] sOutput, int MaxLen);
+
 /**
  * Do not edit below this line!
  */
@@ -59,5 +61,6 @@ public __ext_outputinfo_SetNTVOptional()
 	MarkNativeAsOptional("FindOutput");
 	MarkNativeAsOptional("DeleteOutput");
 	MarkNativeAsOptional("DeleteAllOutputs");
+	MarkNativeAsOptional("GetOutputNames");
 }
 #endif
