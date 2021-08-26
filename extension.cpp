@@ -635,11 +635,11 @@ const sp_nativeinfo_t MyNatives[] =
 bool Outputinfo::SDK_OnLoad(char *error, size_t maxlen, bool late)
 {
 	char conf_error[255] = "";
-	if(!gameconfs->LoadGameConfigFile("outputinfo", &g_pGameConf, conf_error, sizeof(conf_error)))
+	if(!gameconfs->LoadGameConfigFile("outputinfo.games", &g_pGameConf, conf_error, sizeof(conf_error)))
 	{
 		if(conf_error[0])
 		{
-			snprintf(error, maxlen, "Could not read outputinfo.txt: %s\n", conf_error);
+			snprintf(error, maxlen, "Could not read outputinfo.games.txt: %s\n", conf_error);
 		}
 		return false;
 	}
