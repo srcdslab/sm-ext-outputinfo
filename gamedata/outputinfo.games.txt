@@ -2,12 +2,30 @@
 {
 	"#default"
 	{
+		"#supported"
+		{
+			"game"		"cstrike"
+		}
+
 		"Signatures"
 		{
 			"CEventAction__operator_delete"
 			{
 				"library"		"server"
 				"linux"			"@_ZN12CEventActiondlEPv"
+			}
+		}
+	}
+	"csgo"
+	{
+		"Signatures"
+		{
+			// "linux"			"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x08\xC7\x04\x24\x2A\x2A\x2A\x2A\x89\x44\x24\x04\xE8\x2A\x2A\x2A\x2A\xC9\xC3"
+			// Cant find a unique signature (18 instances of same sig) so calling the following instead void CUtlMemoryPool::Free( void *memBlock )
+			"CEventAction__operator_delete"
+			{
+				"library"		"server"
+				"linux"			"\x55\x89\xE5\x8B\x55\x0C\x8B\x45\x08\x85\xD2\x74\x2A\x8B\x48\x18"
 			}
 		}
 	}
