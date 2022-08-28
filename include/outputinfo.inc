@@ -50,7 +50,7 @@ public Extension __ext_outputinfo =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_outputinfo_SetNTVOptional()
+public void __ext_outputinfo_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetOutputCount");
 	MarkNativeAsOptional("GetOutputTarget");
