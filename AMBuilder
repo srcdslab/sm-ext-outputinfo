@@ -29,7 +29,6 @@ for cxx in builder.targets:
 
     binary.sources += [
       'extension.cpp',
-      os.path.join(SM.sm_root, 'extensions', 'sm-ext-common', 'mathstubs.c'),
       os.path.join(SM.sm_root, 'public', 'smsdk_ext.cpp'),
       os.path.join(SM.sm_root, 'public', 'CDetour', 'detours.cpp'),
       os.path.join(SM.sm_root, 'public', 'asm', 'asm.c'),
