@@ -37,10 +37,12 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
+#include "version.h"
+
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"OutputInfo"
 #define SMEXT_CONF_DESCRIPTION	"Read entity outputs"
-#define SMEXT_CONF_VERSION		"1.1"
+#define SMEXT_CONF_VERSION		SM_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"BotoX"
 #define SMEXT_CONF_URL			""
 #define SMEXT_CONF_LOGTAG		"OUTPUTINFO"
