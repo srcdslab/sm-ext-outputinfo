@@ -217,6 +217,23 @@ inline int GetDataMapOffset(CBaseEntity *pEnt, const char *pName, typedescriptio
 #endif
 }
 
+const char* GetEntityName(CBaseEntity* pEntity)
+{
+	static char buffer[256];
+
+	typedescription_t* td = nullptr;
+	int offset = GetDataMapOffset(pEntity, "m_iName", &td);
+
+	if (offset != -1) {
+		string_t name = *(string_t*)((uintptr_t)(pEntity) + offset);
+		if (name.ToCStr() && name.ToCStr()[0] != '\0')
+			return name.ToCStr();
+	}
+
+	snprintf(buffer, sizeof(buffer), "#%d", gamehelpers->EntityToReference(pEntity));
+	return buffer;
+}
+
 inline CBaseEntityOutput *GetOutput(CBaseEntity *pEntity, const char *pOutput, typedescription_t **ppTypeDesc=NULL)
 {
 	typedescription_t *pTypeDesc = NULL;
@@ -398,7 +415,7 @@ cell_t GetOutputValue(IPluginContext *pContext, const cell_t *params)
 	case FIELD_BOOLEAN:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not an integer (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not an integer (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	return (cell_t)pEntityOutput->m_Value.iVal;
@@ -423,7 +440,7 @@ cell_t GetOutputValueFloat(IPluginContext *pContext, const cell_t *params)
 	case FIELD_TIME:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not a float (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a float (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	return sp_ftoc((cell_t)pEntityOutput->m_Value.flVal);
@@ -450,7 +467,8 @@ cell_t GetOutputValueString(IPluginContext *pContext, const cell_t *params)
 	case FIELD_SOUNDNAME:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not a string (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a string (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
+		
 	}
 
 	size_t len;
@@ -478,7 +496,7 @@ cell_t GetOutputValueVector(IPluginContext *pContext, const cell_t *params)
 	case FIELD_TIME:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not a float (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a float (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	cell_t *vec;
