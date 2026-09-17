@@ -13,6 +13,12 @@
 			{
 				"library"		"server"
 				"linux"			"@_ZN12CEventActiondlEPv"
+				"linux64"		"@_ZN12CEventActiondlEPv"
+
+				// Had to add some parts of the offsets in E8 and B9 because this is the whole function and it has a lot of matches.
+				"windows"		"\x55\x8B\xEC\xFF\x75\x08\xB9\xC4\xD8\x52\x10\xE8\x50\x2A\x2A\x2A\x5D\xC3"
+				// Had to add 76 instead of wildcarding it because of the reason above.
+				"windows64"		"\x48\x8B\xD1\x48\x8D\x0D\x76\x2A\x2A\x2A\xE9"
 			}
 		}
 	}
