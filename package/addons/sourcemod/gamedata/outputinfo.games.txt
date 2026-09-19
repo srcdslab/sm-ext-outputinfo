@@ -13,6 +13,10 @@
 			{
 				"library"		"server"
 				"linux"			"@_ZN12CEventActiondlEPv"
+
+				// Because the function is so small, it alone will have so many matches, so the next function's first bytes are included
+				// with 14 padding bytes.
+				"windows"		"\x55\x8B\xEC\xFF\x75\x08\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x5D\xC3\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x55\x8B\xEC\x51\x53"
 			}
 		}
 	}
