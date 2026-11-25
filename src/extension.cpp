@@ -209,7 +209,8 @@ const char* GetEntityName(CBaseEntity* pEntity)
 			return name.ToCStr();
 	}
 
-	snprintf(buffer, sizeof(buffer), "#%d", gamehelpers->EntityToReference(pEntity));
+	// The index, not the reference: references of edictless entities have the high bit set.
+	snprintf(buffer, sizeof(buffer), "#%d", gamehelpers->ReferenceToIndex(gamehelpers->EntityToReference(pEntity)));
 	return buffer;
 }
 
@@ -407,11 +408,11 @@ cell_t GetOutputValueFloat(IPluginContext *pContext, const cell_t *params)
 
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(gamehelpers->IndexToReference(params[1]));
 	if(!pEntity)
-		return -1;
+		return sp_ftoc(-1.0f);
 
 	CBaseEntityOutput *pEntityOutput = GetOutput(pEntity, pOutput);
 	if(pEntityOutput == NULL)
-		return -1;
+		return sp_ftoc(-1.0f);
 
 	switch(pEntityOutput->m_Value.fieldType)
 	{
@@ -422,7 +423,7 @@ cell_t GetOutputValueFloat(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Entity '%s': %s value is not a float (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
-	return sp_ftoc((cell_t)pEntityOutput->m_Value.flVal);
+	return sp_ftoc(pEntityOutput->m_Value.flVal);
 }
 
 cell_t GetOutputValueString(IPluginContext *pContext, const cell_t *params)
@@ -471,11 +472,11 @@ cell_t GetOutputValueVector(IPluginContext *pContext, const cell_t *params)
 
 	switch(pEntityOutput->m_Value.fieldType)
 	{
-	case FIELD_FLOAT:
-	case FIELD_TIME:
+	case FIELD_VECTOR:
+	case FIELD_POSITION_VECTOR:
 		break;
 	default:
-		return pContext->ThrowNativeError("Entity '%s': %s value is not a float (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a vector (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	cell_t *vec;
